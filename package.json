@@ -1,8 +1,14 @@
 {
   "name": "cpp-code-checker",
+  "publisher": "HecreReed",
   "displayName": "C++ Code Checker",
   "description": "Automatically detect and fix C++ code issues based on MR ruleset",
   "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HecreReed/codecheck.git"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -85,15 +91,14 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "package:vsix": "npx @vscode/vsce package --no-dependencies",
+    "test:smoke": "node ./test/runTest.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.5.2",
     "typescript": "^5.3.0"
-  },
-  "dependencies": {
-    "@types/xlsx": "^0.0.35",
-    "xlsx": "^0.18.5"
   }
 }

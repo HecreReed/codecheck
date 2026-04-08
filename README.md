@@ -1,6 +1,6 @@
 # C++ Code Checker
 
-一个 VS Code 插件项目，用来根据仓库内的 `mr_ruleset_*.xlsx` 规则表扫描当前工作区中的 C/C++ 文件，输出诊断信息，并对可安全自动修复的问题提供一键修复能力。
+一个 VS Code 插件项目，用来根据内置的规则快照扫描当前工作区中的 C/C++ 文件，输出诊断信息，并对可安全自动修复的问题提供一键修复能力。规则快照来源于原始 Excel 规则表，但最终仓库和 `.vsix` 安装包不再依赖或携带原始 `.xlsx` 文件。
 
 ## 当前能力
 
@@ -44,6 +44,8 @@
 ```bash
 npm install
 npm run compile
+npm run test:smoke
+npm run package:vsix
 ```
 
 按 `F5` 启动 VS Code Extension Development Host 进行调试。

@@ -45,7 +45,7 @@ async function refreshWorkspaceDiagnostics(showNotification = false): Promise<vo
 
 export function activate(context: vscode.ExtensionContext) {
   engine = new RuleEngine();
-  catalog = new RuleCatalog(context.extensionPath, engine.getRules());
+  catalog = new RuleCatalog(engine.getRules());
   scanner = new Scanner(engine);
 
   const collection = vscode.languages.createDiagnosticCollection('cpp-checker');

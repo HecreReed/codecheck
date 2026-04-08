@@ -147,6 +147,7 @@ export async function fixAllInFile(
 
   const edit = createWorkspaceEdit(document.uri, source, updatedSource);
   await vscode.workspace.applyEdit(edit);
+  await document.save();
   vscode.window.showInformationMessage(`已在当前文件应用 ${appliedCount} 处自动修复`);
   return appliedCount;
 }
@@ -157,6 +158,7 @@ export async function fixAllInWorkspace(
 ): Promise<{ files: number; fixes: number }> {
   const files = await scanner.findCppFiles();
   const edit = new vscode.WorkspaceEdit();
+  const documentsToSave: vscode.TextDocument[] = [];
   let fixedFiles = 0;
   let totalFixes = 0;
 
@@ -175,6 +177,7 @@ export async function fixAllInWorkspace(
     }
 
     edit.replace(uri, getFullDocumentRange(source), updatedSource);
+    documentsToSave.push(document);
     fixedFiles++;
     totalFixes += appliedCount;
   }
@@ -185,6 +188,9 @@ export async function fixAllInWorkspace(
   }
 
   await vscode.workspace.applyEdit(edit);
+  for (const document of documentsToSave) {
+    await document.save();
+  }
   vscode.window.showInformationMessage(`已在 ${fixedFiles} 个文件中应用 ${totalFixes} 处自动修复`);
   return { files: fixedFiles, fixes: totalFixes };
 }
