@@ -1,0 +1,99 @@
+{
+  "name": "cpp-code-checker",
+  "displayName": "C++ Code Checker",
+  "description": "Automatically detect and fix C++ code issues based on MR ruleset",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:cpp",
+    "onLanguage:c",
+    "workspaceContains:**/*.cpp",
+    "workspaceContains:**/*.h"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cppChecker.scanWorkspace",
+        "title": "C++ Checker: Scan Workspace"
+      },
+      {
+        "command": "cppChecker.fixAll",
+        "title": "C++ Checker: Fix All Auto-fixable Issues in Current File"
+      },
+      {
+        "command": "cppChecker.fixWorkspace",
+        "title": "C++ Checker: Fix All Auto-fixable Issues in Workspace"
+      }
+    ],
+    "configuration": {
+      "title": "C++ Code Checker",
+      "properties": {
+        "cppChecker.autoScanWorkspaceOnActivate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically scan the whole workspace when the extension activates"
+        },
+        "cppChecker.autoScanWorkspaceOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Re-scan the whole workspace after saving a C/C++ file"
+        },
+        "cppChecker.maxHeaderLines": {
+          "type": "number",
+          "default": 1000,
+          "description": "Max lines allowed in a header file"
+        },
+        "cppChecker.maxSourceLines": {
+          "type": "number",
+          "default": 2000,
+          "description": "Max lines allowed in a source file"
+        },
+        "cppChecker.maxFunctionLines": {
+          "type": "number",
+          "default": 80,
+          "description": "Max lines allowed in a single function"
+        },
+        "cppChecker.maxNestingDepth": {
+          "type": "number",
+          "default": 5,
+          "description": "Max nesting depth allowed in a function"
+        },
+        "cppChecker.maxCyclomaticComplexity": {
+          "type": "number",
+          "default": 10,
+          "description": "Max cyclomatic complexity allowed per function"
+        },
+        "cppChecker.maxFilesPerDirectory": {
+          "type": "number",
+          "default": 50,
+          "description": "Max number of files allowed in a single directory"
+        },
+        "cppChecker.licenseHeader": {
+          "type": "string",
+          "default": "// Copyright (c) Huawei Technologies Co., Ltd. All rights reserved.",
+          "description": "Required license header text (first line of file)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "@types/xlsx": "^0.0.35",
+    "xlsx": "^0.18.5"
+  }
+}
