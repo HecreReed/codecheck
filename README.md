@@ -48,4 +48,43 @@ npm run test:smoke
 npm run package:vsix
 ```
 
-按 `F5` 启动 VS Code Extension Development Host 进行调试。
+### 调试运行
+
+1. 用 VS Code 打开这个项目根目录。
+2. 首次执行 `npm install`。
+3. 直接按 `F5`，选择 `Run Extension`。
+4. 会弹出一个新的 `Extension Development Host` 窗口。
+5. 在那个新窗口里再打开一个包含 C/C++ 文件的工程或目录。
+6. 用命令面板执行下面几个命令：
+
+- `C++ Checker: Scan Workspace`
+- `C++ Checker: Scan Current File`
+- `C++ Checker: Fix All Auto-fixable Issues in Current File`
+- `C++ Checker: Fix Current File`
+- `C++ Checker: Fix All Auto-fixable Issues in Workspace`
+
+### 右键与快捷键
+
+- 在资源管理器里右键 `.c/.cc/.cpp/.cxx/.h/.hpp` 文件，可以直接看到：
+  - `C++ Checker: Scan Current File`
+  - `C++ Checker: Fix Current File`
+- 在编辑器里右键 C/C++ 文件内容，也能直接调用这两个命令。
+- 左侧资源管理器会新增一个 `C++ Checker Issues` 视图：
+  - 按文件分组显示当前工作区所有有问题的文件
+  - 展开后能看到具体问题、行号和对应代码片段
+  - 点击问题项会直接跳到代码位置
+  - 视图顶部有“扫描工作区 / 一键修复工作区”按钮
+  - 文件项右侧有“扫描当前文件 / 修复当前文件”操作
+- 全量工作区扫描快捷键：
+  - Windows / Linux: `Ctrl+Alt+Shift+S`
+  - macOS: `Cmd+Alt+Shift+S`
+
+### 安装使用
+
+如果你不想走 `F5` 调试，可以直接安装打好的 `.vsix`：
+
+```bash
+code --install-extension cpp-code-checker-0.1.0.vsix
+```
+
+安装后，打开任意包含 C/C++ 文件的项目，插件会自动扫描；也可以在命令面板里手动运行扫描和修复命令。

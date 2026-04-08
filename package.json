@@ -29,12 +29,91 @@
         "title": "C++ Checker: Scan Workspace"
       },
       {
+        "command": "cppChecker.scanFile",
+        "title": "C++ Checker: Scan Current File"
+      },
+      {
         "command": "cppChecker.fixAll",
         "title": "C++ Checker: Fix All Auto-fixable Issues in Current File"
       },
       {
+        "command": "cppChecker.fixFile",
+        "title": "C++ Checker: Fix Current File"
+      },
+      {
         "command": "cppChecker.fixWorkspace",
         "title": "C++ Checker: Fix All Auto-fixable Issues in Workspace"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "cppChecker.workspaceIssues",
+          "name": "C++ Checker Issues"
+        }
+      ]
+    },
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "cppChecker.scanFile",
+          "when": "explorerResourceIsFolder == false && resourceExtname =~ /\\.(c|cc|cpp|cxx|h|hpp)$/",
+          "group": "navigation@90"
+        },
+        {
+          "command": "cppChecker.fixFile",
+          "when": "explorerResourceIsFolder == false && resourceExtname =~ /\\.(c|cc|cpp|cxx|h|hpp)$/",
+          "group": "navigation@91"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "cppChecker.scanFile",
+          "when": "editorLangId == c || editorLangId == cpp",
+          "group": "navigation@90"
+        },
+        {
+          "command": "cppChecker.fixFile",
+          "when": "editorLangId == c || editorLangId == cpp",
+          "group": "navigation@91"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "cppChecker.scanWorkspace",
+          "when": "view == cppChecker.workspaceIssues",
+          "group": "navigation@1"
+        },
+        {
+          "command": "cppChecker.fixWorkspace",
+          "when": "view == cppChecker.workspaceIssues",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "cppChecker.scanFile",
+          "when": "view == cppChecker.workspaceIssues && viewItem == cppCheckerFile",
+          "group": "inline@1"
+        },
+        {
+          "command": "cppChecker.fixFile",
+          "when": "view == cppChecker.workspaceIssues && viewItem == cppCheckerFile",
+          "group": "inline@2"
+        },
+        {
+          "command": "cppChecker.fixFile",
+          "when": "view == cppChecker.workspaceIssues && viewItem == cppCheckerIssue",
+          "group": "navigation@1"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "cppChecker.scanWorkspace",
+        "key": "ctrl+alt+shift+s",
+        "mac": "cmd+alt+shift+s",
+        "when": "workspaceFolderCount > 0"
       }
     ],
     "configuration": {

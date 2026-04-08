@@ -41,7 +41,9 @@ async function diagnosticsContain(fileUri, ruleId) {
 exports.run = async function run() {
   const commands = await vscode.commands.getCommands(true);
   assert(commands.includes('cppChecker.scanWorkspace'));
+  assert(commands.includes('cppChecker.scanFile'));
   assert(commands.includes('cppChecker.fixAll'));
+  assert(commands.includes('cppChecker.fixFile'));
   assert(commands.includes('cppChecker.fixWorkspace'));
 
   await vscode.workspace.getConfiguration('cppChecker').update('autoScanWorkspaceOnActivate', false, vscode.ConfigurationTarget.Workspace);
@@ -55,15 +57,17 @@ exports.run = async function run() {
   const mainDocument = await vscode.workspace.openTextDocument(mainUri);
   await vscode.window.showTextDocument(mainDocument);
 
+  await vscode.commands.executeCommand('cppChecker.scanFile', mainUri);
+  await waitFor(async () => diagnosticsContain(mainUri, RULE_LICENSE), 15000, 'scanFile did not report missing license header');
+
   await vscode.commands.executeCommand('cppChecker.scanWorkspace');
 
-  await waitFor(async () => diagnosticsContain(mainUri, RULE_LICENSE), 15000, 'scanWorkspace did not report missing license header');
   await waitFor(async () => diagnosticsContain(mainUri, RULE_USING_BEFORE_INCLUDE), 15000, 'scanWorkspace did not report using-before-include');
   await waitFor(async () => diagnosticsContain(mainUri, RULE_WARNING_SUPPRESS), 15000, 'scanWorkspace did not report warning suppression');
   await waitFor(async () => diagnosticsContain(duplicate1Uri, RULE_DUPLICATE_FILE), 15000, 'scanWorkspace did not report duplicate files');
   await waitFor(async () => diagnosticsContain(mainUri, RULE_OVERSIZED_DIRECTORY), 15000, 'scanWorkspace did not report oversized directory');
 
-  await vscode.commands.executeCommand('cppChecker.fixAll');
+  await vscode.commands.executeCommand('cppChecker.fixFile', mainUri);
   await sleep(1000);
 
   const updatedMain = (await vscode.workspace.openTextDocument(mainUri)).getText();
