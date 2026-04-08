@@ -21,6 +21,7 @@ function getConfig() {
 }
 
 async function refreshWorkspaceDiagnostics(showNotification = false): Promise<void> {
+  issuesProvider.setScanning();
   diagnosticProvider.clear();
   issuesProvider.clear();
   const runScan = async () => {
@@ -37,14 +38,24 @@ async function refreshWorkspaceDiagnostics(showNotification = false): Promise<vo
   };
 
   if (showNotification) {
-    await vscode.window.withProgress(
-      { location: vscode.ProgressLocation.Notification, title: '正在扫描C/C++ 工作区...', cancellable: false },
-      runScan
-    );
+    try {
+      await vscode.window.withProgress(
+        { location: vscode.ProgressLocation.Notification, title: '正在扫描C/C++ 工作区...', cancellable: false },
+        runScan
+      );
+    } catch (error) {
+      issuesProvider.setIdle();
+      vscode.window.showErrorMessage(`工作区扫描失败：${error instanceof Error ? error.message : String(error)}`);
+    }
     return;
   }
 
-  await runScan();
+  try {
+    await runScan();
+  } catch (error) {
+    issuesProvider.setIdle();
+    vscode.window.showErrorMessage(`工作区扫描失败：${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 function resolveTargetUri(target?: vscode.Uri | WorkspaceIssueFileItem | WorkspaceIssueMatchItem): vscode.Uri | undefined {
@@ -182,6 +193,22 @@ export function activate(context: vscode.ExtensionContext) {
         const matches = scanner.scanFile(doc.fileName);
         diagnosticProvider.update(doc.fileName, matches);
         issuesProvider.updateFile(doc.fileName, matches);
+      }
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeWorkspaceFolders(() => {
+      if (getConfig().autoScanWorkspaceOnActivate) {
+        void refreshWorkspaceDiagnostics(false);
+      }
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.workspace.onDidGrantWorkspaceTrust(() => {
+      if (getConfig().autoScanWorkspaceOnActivate) {
+        void refreshWorkspaceDiagnostics(false);
       }
     })
   );

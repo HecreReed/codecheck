@@ -1,45 +1,175 @@
+<div align="center">
+
 # C++ Code Checker
 
-一个 VS Code 插件项目，用来根据内置的规则快照扫描当前工作区中的 C/C++ 文件，输出诊断信息，并对可安全自动修复的问题提供一键修复能力。规则快照来源于原始 Excel 规则表，但最终仓库和 `.vsix` 安装包不再依赖或携带原始 `.xlsx` 文件。
+<p>
+  <strong>A workspace-first VS Code extension for large-scale C/C++ rule scanning, issue navigation, and safe one-click fixes.</strong>
+</p>
 
-## 当前能力
+<p>
+  <a href="https://github.com/HecreReed/codecheck/releases/latest">
+    <img alt="Release" src="https://img.shields.io/github/v/release/HecreReed/codecheck?display_name=tag&style=for-the-badge">
+  </a>
+  <a href="https://github.com/HecreReed/codecheck/blob/main/LICENSE">
+    <img alt="License" src="https://img.shields.io/github/license/HecreReed/codecheck?style=for-the-badge">
+  </a>
+  <img alt="VS Code" src="https://img.shields.io/badge/VS%20Code-1.85%2B-007ACC?style=for-the-badge">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-Driven-3178C6?style=for-the-badge">
+</p>
 
-- 启动后自动扫描当前工作区中的 `.cpp/.cc/.cxx/.c/.h/.hpp` 文件
-- 支持手动执行工作区扫描
-- 支持当前文件一键修复
-- 支持工作区一键修复
-- 规则覆盖对齐当前仓库中的 Excel 规则表
-- 增加了工作区级规则：
-  - 重复文件
-  - 超大目录
+<p>
+  <em>Built for teams who want the scanner to feel like a cockpit, not a checkbox.</em>
+</p>
 
-## 已实现的关键规则增强
+</div>
 
-- `G.FUU.12`：拆分为 `destMax/count` 检查和 `destMax` 正确性检查
-- `G.STD.13-CPP`：增加格式化类型不匹配检查
-- `G.FUU.15`：增加用户自定义安全函数检测
-- `超大函数 / 超大深度函数 / 超大圈复杂度`：拆分为独立规则 ID
-- 为 Excel 中的 C/C++ 双份规则 ID 增加了别名映射
+---
 
-## 命令
+## What It Feels Like
 
-- `C++ Checker: Scan Workspace`
-- `C++ Checker: Fix All Auto-fixable Issues in Current File`
-- `C++ Checker: Fix All Auto-fixable Issues in Workspace`
+This extension is designed around a simple promise:
 
-## 配置项
+> Open a C/C++ workspace, scan once, and immediately get a dedicated issue panel that shows exactly which files are problematic, what went wrong, and what can be fixed with one click.
 
-- `cppChecker.autoScanWorkspaceOnActivate`
-- `cppChecker.autoScanWorkspaceOnSave`
-- `cppChecker.maxHeaderLines`
-- `cppChecker.maxSourceLines`
-- `cppChecker.maxFunctionLines`
-- `cppChecker.maxNestingDepth`
-- `cppChecker.maxCyclomaticComplexity`
-- `cppChecker.maxFilesPerDirectory`
-- `cppChecker.licenseHeader`
+It does not depend on shipping the original Excel rules file at runtime.  
+The ruleset is embedded as a generated snapshot, so the `.vsix` stays portable and behaves consistently across different machines.
 
-## 本地开发
+## Why This Build Is More Reliable
+
+The newest version explicitly addresses the “same project, different machine, different result” problem:
+
+- The extension now activates on startup as a fallback, not only after opening a C/C++ file.
+- Workspace activation covers `.cpp`, `.cc`, `.cxx`, `.c`, `.h`, and `.hpp`.
+- The issue panel no longer silently looks “clean” before a scan finishes.
+- Workspace changes and trust changes can trigger a fresh scan path.
+- The release package no longer depends on a raw `.xlsx` file being present on disk.
+
+## Feature Surface
+
+| Area | What You Get |
+| --- | --- |
+| Workspace Scan | Scan the entire project and collect diagnostics for all supported C/C++ files |
+| Issues Panel | Dedicated `C++ Checker Issues` tree view grouped by file |
+| Code Navigation | Click an issue item to jump directly to the exact line |
+| File Actions | Right-click a file to scan or fix just that file |
+| Workspace Actions | Trigger workspace-wide scan or workspace-wide fix from the issue view |
+| Safe Auto Fix | Automatically fixes rules that can be changed without guessing intent |
+| Snapshot Ruleset | Ships with an embedded rules snapshot for portable behavior |
+
+## Interface Highlights
+
+### 1. Workspace Issue Console
+
+The Explorer side bar contains a dedicated panel:
+
+- `C++ Checker Issues`
+- grouped by file
+- per-issue child rows with line number and code snippet
+- direct click-to-jump navigation
+- toolbar actions for workspace scan and workspace fix
+
+### 2. Right-Click File Actions
+
+In Explorer and in the editor context menu:
+
+- `C++ Checker: Scan Current File`
+- `C++ Checker: Fix Current File`
+
+### 3. Keyboard Shortcut
+
+For full workspace scan:
+
+- Windows / Linux: `Ctrl+Alt+Shift+S`
+- macOS: `Cmd+Alt+Shift+S`
+
+## Workflow
+
+```mermaid
+flowchart TD
+  A["Open C/C++ Workspace"] --> B["Extension Activates"]
+  B --> C["Scan Workspace"]
+  C --> D["Diagnostics + Issue Tree"]
+  D --> E["Open File Group"]
+  E --> F["Inspect Problem Item"]
+  F --> G["Jump to Code"]
+  D --> H["Fix Current File"]
+  D --> I["Fix Entire Workspace"]
+```
+
+## What Gets Fixed Automatically
+
+The extension intentionally separates “detectable” from “safe to auto-rewrite”.
+
+Examples of fixable cases include:
+
+- missing license header insertion
+- removal of warning suppression directives
+- moving `using namespace` below `#include` blocks
+
+Examples of detect-only cases include:
+
+- format string type mismatches
+- unsafe API usage that requires developer intent
+- memory/security findings that need semantic review
+
+## Supported Rule Coverage
+
+This build aligns with the MR ruleset snapshot embedded in the extension, including:
+
+- duplicated Excel rule IDs and C/C++ mirrored IDs through alias mapping
+- split handling for `G.FUU.12`
+- split handling for oversized function / nesting / complexity
+- workspace-level checks such as duplicate files and oversized directories
+
+## Quick Start
+
+### Install From VSIX
+
+```bash
+code --install-extension cpp-code-checker-0.2.0.vsix
+```
+
+### Run In VS Code
+
+1. Open any C/C++ project folder.
+2. Wait for the extension to activate.
+3. Open the `C++ Checker Issues` panel in the Explorer.
+4. Click `Scan Workspace`, or use the shortcut:
+
+```text
+Ctrl+Alt+Shift+S
+Cmd+Alt+Shift+S
+```
+
+5. Use:
+   - `Fix Current File`
+   - `Fix All Auto-fixable Issues in Workspace`
+
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `C++ Checker: Scan Workspace` | Full workspace scan |
+| `C++ Checker: Scan Current File` | Scan only the selected/open file |
+| `C++ Checker: Fix Current File` | Fix safe issues in one file |
+| `C++ Checker: Fix All Auto-fixable Issues in Current File` | Alias to single-file fix flow |
+| `C++ Checker: Fix All Auto-fixable Issues in Workspace` | Apply safe fixes across the workspace |
+
+## Configuration
+
+| Setting | Description |
+| --- | --- |
+| `cppChecker.autoScanWorkspaceOnActivate` | Scan the full workspace when the extension starts |
+| `cppChecker.autoScanWorkspaceOnSave` | Re-scan the workspace when a C/C++ file is saved |
+| `cppChecker.maxHeaderLines` | Threshold for oversized headers |
+| `cppChecker.maxSourceLines` | Threshold for oversized source files |
+| `cppChecker.maxFunctionLines` | Threshold for oversized functions |
+| `cppChecker.maxNestingDepth` | Threshold for deep nesting |
+| `cppChecker.maxCyclomaticComplexity` | Threshold for complexity |
+| `cppChecker.maxFilesPerDirectory` | Threshold for oversized directories |
+| `cppChecker.licenseHeader` | Custom first-line license header |
+
+## Local Development
 
 ```bash
 npm install
@@ -48,43 +178,40 @@ npm run test:smoke
 npm run package:vsix
 ```
 
-### 调试运行
+### Debug With F5
 
-1. 用 VS Code 打开这个项目根目录。
-2. 首次执行 `npm install`。
-3. 直接按 `F5`，选择 `Run Extension`。
-4. 会弹出一个新的 `Extension Development Host` 窗口。
-5. 在那个新窗口里再打开一个包含 C/C++ 文件的工程或目录。
-6. 用命令面板执行下面几个命令：
+1. Open this repository in VS Code.
+2. Press `F5`.
+3. Choose `Run Extension`.
+4. A new `Extension Development Host` window will appear.
+5. In that new window, open a real C/C++ project.
+6. Use the issue panel, right-click menus, or the scan shortcut.
 
-- `C++ Checker: Scan Workspace`
-- `C++ Checker: Scan Current File`
-- `C++ Checker: Fix All Auto-fixable Issues in Current File`
-- `C++ Checker: Fix Current File`
-- `C++ Checker: Fix All Auto-fixable Issues in Workspace`
+## Release Artifacts
 
-### 右键与快捷键
+- Repository: [HecreReed/codecheck](https://github.com/HecreReed/codecheck)
+- Releases: [GitHub Releases](https://github.com/HecreReed/codecheck/releases)
+- Packaged extension: `cpp-code-checker-0.2.0.vsix`
 
-- 在资源管理器里右键 `.c/.cc/.cpp/.cxx/.h/.hpp` 文件，可以直接看到：
-  - `C++ Checker: Scan Current File`
-  - `C++ Checker: Fix Current File`
-- 在编辑器里右键 C/C++ 文件内容，也能直接调用这两个命令。
-- 左侧资源管理器会新增一个 `C++ Checker Issues` 视图：
-  - 按文件分组显示当前工作区所有有问题的文件
-  - 展开后能看到具体问题、行号和对应代码片段
-  - 点击问题项会直接跳到代码位置
-  - 视图顶部有“扫描工作区 / 一键修复工作区”按钮
-  - 文件项右侧有“扫描当前文件 / 修复当前文件”操作
-- 全量工作区扫描快捷键：
-  - Windows / Linux: `Ctrl+Alt+Shift+S`
-  - macOS: `Cmd+Alt+Shift+S`
+## Smoke-Tested Paths
 
-### 安装使用
+The automated smoke test currently verifies:
 
-如果你不想走 `F5` 调试，可以直接安装打好的 `.vsix`：
+- extension activation
+- workspace scan
+- single-file scan
+- single-file fix
+- workspace fix
+- `.vsix` installation flow
 
-```bash
-code --install-extension cpp-code-checker-0.1.0.vsix
-```
+## Philosophy
 
-安装后，打开任意包含 C/C++ 文件的项目，插件会自动扫描；也可以在命令面板里手动运行扫描和修复命令。
+This project is trying to make static checking feel operational:
+
+- broad workspace visibility
+- sharp file-level controls
+- safe fix automation
+- predictable behavior on different machines
+
+If a scanner is powerful but people do not trust what they are seeing, they stop using it.  
+This extension is optimized as much for confidence as for detection.

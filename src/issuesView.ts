@@ -55,12 +55,24 @@ export class WorkspaceIssuesProvider implements vscode.TreeDataProvider<Workspac
   private readonly results = new Map<string, RuleMatch[]>();
   private view?: vscode.TreeView<WorkspaceIssueFileItem | WorkspaceIssueMatchItem>;
   private fileSnippetCache = new Map<string, string[]>();
+  private state: 'idle' | 'scanning' | 'ready' = 'idle';
+  private lastScanSummary?: { files: number; issues: number };
 
   constructor(private readonly catalog: RuleCatalog) {}
 
   attachView(view: vscode.TreeView<WorkspaceIssueFileItem | WorkspaceIssueMatchItem>): void {
     this.view = view;
     this.refreshViewMessage();
+  }
+
+  setScanning(): void {
+    this.state = 'scanning';
+    this.refresh();
+  }
+
+  setIdle(): void {
+    this.state = 'idle';
+    this.refresh();
   }
 
   replaceAll(results: Map<string, RuleMatch[]>): void {
@@ -71,6 +83,8 @@ export class WorkspaceIssuesProvider implements vscode.TreeDataProvider<Workspac
         this.results.set(filePath, [...matches]);
       }
     }
+    this.lastScanSummary = this.buildSummary();
+    this.state = 'ready';
     this.refresh();
   }
 
@@ -81,6 +95,8 @@ export class WorkspaceIssuesProvider implements vscode.TreeDataProvider<Workspac
     } else {
       this.results.set(filePath, [...matches]);
     }
+    this.lastScanSummary = this.buildSummary();
+    this.state = 'ready';
     this.refresh();
   }
 
@@ -88,9 +104,11 @@ export class WorkspaceIssuesProvider implements vscode.TreeDataProvider<Workspac
     if (filePath) {
       this.results.delete(filePath);
       this.fileSnippetCache.delete(filePath);
+      this.lastScanSummary = this.buildSummary();
     } else {
       this.results.clear();
       this.fileSnippetCache.clear();
+      this.lastScanSummary = undefined;
     }
     this.refresh();
   }
@@ -140,11 +158,28 @@ export class WorkspaceIssuesProvider implements vscode.TreeDataProvider<Workspac
     if (!this.view) {
       return;
     }
-    const totalFiles = this.results.size;
-    const totalIssues = [...this.results.values()].reduce((sum, matches) => sum + matches.length, 0);
+    if (this.state === 'scanning') {
+      this.view.message = '正在扫描工作区，请稍候...';
+      return;
+    }
+
+    if (this.state === 'idle') {
+      this.view.message = '尚未扫描当前工作区。点击顶部 Scan Workspace 开始检查。';
+      return;
+    }
+
+    const totalFiles = this.lastScanSummary?.files ?? this.results.size;
+    const totalIssues = this.lastScanSummary?.issues ?? [...this.results.values()].reduce((sum, matches) => sum + matches.length, 0);
     this.view.message = totalFiles === 0
-      ? '暂无问题。运行 Scan Workspace 开始检查。'
+      ? '扫描完成，当前没有发现问题。'
       : `${totalFiles} 个文件，${totalIssues} 个问题`;
+  }
+
+  private buildSummary(): { files: number; issues: number } {
+    return {
+      files: this.results.size,
+      issues: [...this.results.values()].reduce((sum, matches) => sum + matches.length, 0),
+    };
   }
 
   private getFileLines(filePath: string): string[] {

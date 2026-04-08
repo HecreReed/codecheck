@@ -3,7 +3,7 @@
   "publisher": "HecreReed",
   "displayName": "C++ Code Checker",
   "description": "Automatically detect and fix C++ code issues based on MR ruleset",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -16,10 +16,15 @@
     "Linters"
   ],
   "activationEvents": [
+    "onStartupFinished",
     "onLanguage:cpp",
     "onLanguage:c",
     "workspaceContains:**/*.cpp",
-    "workspaceContains:**/*.h"
+    "workspaceContains:**/*.cc",
+    "workspaceContains:**/*.cxx",
+    "workspaceContains:**/*.c",
+    "workspaceContains:**/*.h",
+    "workspaceContains:**/*.hpp"
   ],
   "main": "./out/extension.js",
   "contributes": {
