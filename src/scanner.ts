@@ -4,14 +4,15 @@ import * as path from 'path';
 import { RuleEngine } from './ruleEngine';
 import { RuleMatch } from './rules/types';
 import { hashContent } from './utils/fileUtils';
+import { collectCppFilesFromDirectory, DEFAULT_EXCLUDED_DIRECTORY_PATTERNS, isExcludedPath } from './utils/workspaceWalker';
 
 const CPP_GLOB = '**/*.{cpp,h,hpp,cc,cxx,c}';
-const EXCLUDE_GLOB = '**/{node_modules,.git,out,dist,build}/**';
 
 function getWorkspaceConfig() {
   const cfg = vscode.workspace.getConfiguration('cppChecker');
   return {
     maxFilesPerDirectory: cfg.get<number>('maxFilesPerDirectory', 50),
+    excludeDirectories: cfg.get<string[]>('excludeDirectories', DEFAULT_EXCLUDED_DIRECTORY_PATTERNS),
   };
 }
 
@@ -44,7 +45,28 @@ export class Scanner {
   }
 
   async findCppFiles(): Promise<vscode.Uri[]> {
-    return vscode.workspace.findFiles(CPP_GLOB, EXCLUDE_GLOB);
+    const config = getWorkspaceConfig();
+    const discoveredFiles = new Map<string, vscode.Uri>();
+    const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
+
+    for (const folder of workspaceFolders) {
+      if (folder.uri.scheme === 'file') {
+        const filePaths = await collectCppFilesFromDirectory(folder.uri.fsPath, config.excludeDirectories);
+        for (const filePath of filePaths) {
+          discoveredFiles.set(filePath, vscode.Uri.file(filePath));
+        }
+        continue;
+      }
+
+      const uris = await vscode.workspace.findFiles(new vscode.RelativePattern(folder, CPP_GLOB));
+      for (const uri of uris) {
+        if (!isExcludedPath(uri.path, config.excludeDirectories)) {
+          discoveredFiles.set(uri.toString(), uri);
+        }
+      }
+    }
+
+    return [...discoveredFiles.values()].sort((left, right) => left.fsPath.localeCompare(right.fsPath));
   }
 
   private applyWorkspaceRules(results: Map<string, RuleMatch[]>, filePaths: string[]): void {

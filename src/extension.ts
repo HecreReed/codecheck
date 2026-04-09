@@ -5,6 +5,7 @@ import { DiagnosticProvider } from './diagnosticProvider';
 import { FixProvider, fixAllInFile, fixAllInWorkspace } from './fixProvider';
 import { RuleCatalog } from './ruleCatalog';
 import { WorkspaceIssueFileItem, WorkspaceIssueMatchItem, WorkspaceIssuesProvider } from './issuesView';
+import { isCppSourceFile } from './utils/workspaceWalker';
 
 let diagnosticProvider: DiagnosticProvider;
 let scanner: Scanner;
@@ -250,7 +251,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 function isCppFile(fileName: string): boolean {
-  return /\.(cpp|h|hpp|cc|cxx|c)$/.test(fileName);
+  return isCppSourceFile(fileName);
 }
 
 export function deactivate() {}

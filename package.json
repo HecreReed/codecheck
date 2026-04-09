@@ -3,7 +3,7 @@
   "publisher": "HecreReed",
   "displayName": "C++ Code Checker",
   "description": "Automatically detect and fix C++ code issues based on MR ruleset",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -11,6 +11,12 @@
   },
   "engines": {
     "vscode": "^1.85.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true,
+      "description": "The extension only scans and edits files inside the opened workspace without executing project code."
+    }
   },
   "categories": [
     "Linters"
@@ -164,6 +170,29 @@
           "default": 50,
           "description": "Max number of files allowed in a single directory"
         },
+        "cppChecker.excludeDirectories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            ".git",
+            ".hg",
+            ".svn",
+            "node_modules",
+            "out",
+            "dist",
+            "build",
+            "build-*",
+            "cmake-build-*",
+            "CMakeFiles",
+            ".vscode-test",
+            "tmp",
+            "temp",
+            "install"
+          ],
+          "description": "Directory names or simple prefixes (for example build-*) that should be skipped during workspace scan"
+        },
         "cppChecker.licenseHeader": {
           "type": "string",
           "default": "// Copyright (c) Huawei Technologies Co., Ltd. All rights reserved.",
@@ -177,7 +206,9 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "package:vsix": "npx @vscode/vsce package --no-dependencies",
-    "test:smoke": "node ./test/runTest.mjs"
+    "test:unit": "npm run compile && node --test ./test/workspaceWalker.test.js",
+    "test:smoke": "npm run compile && node ./test/runTest.mjs",
+    "test": "npm run test:unit && npm run test:smoke"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

@@ -38,11 +38,11 @@ The ruleset is embedded as a generated snapshot, so the `.vsix` stays portable a
 
 The newest version explicitly addresses the “same project, different machine, different result” problem:
 
-- The extension now activates on startup as a fallback, not only after opening a C/C++ file.
-- Workspace activation covers `.cpp`, `.cc`, `.cxx`, `.c`, `.h`, and `.hpp`.
-- The issue panel no longer silently looks “clean” before a scan finishes.
-- Workspace changes and trust changes can trigger a fresh scan path.
-- The release package no longer depends on a raw `.xlsx` file being present on disk.
+- The extension now walks local workspace folders directly instead of depending only on `workspace.findFiles(...)`.
+- Generated directories such as `build-*`, `cmake-build-*`, `tmp`, and `install` are skipped by default during workspace scan.
+- Restricted Mode / Workspace Trust is explicitly supported, so first-open behavior is more predictable on other machines.
+- The extension still activates on startup as a fallback, not only after opening a C/C++ file.
+- The release package does not depend on a raw `.xlsx` file being present on disk.
 
 ## Feature Surface
 
@@ -126,7 +126,7 @@ This build aligns with the MR ruleset snapshot embedded in the extension, includ
 ### Install From VSIX
 
 ```bash
-code --install-extension cpp-code-checker-0.2.0.vsix
+code --install-extension cpp-code-checker-0.2.1.vsix
 ```
 
 ### Run In VS Code
@@ -167,6 +167,7 @@ Cmd+Alt+Shift+S
 | `cppChecker.maxNestingDepth` | Threshold for deep nesting |
 | `cppChecker.maxCyclomaticComplexity` | Threshold for complexity |
 | `cppChecker.maxFilesPerDirectory` | Threshold for oversized directories |
+| `cppChecker.excludeDirectories` | Directory names or simple prefixes skipped during workspace scan |
 | `cppChecker.licenseHeader` | Custom first-line license header |
 
 ## Local Development
@@ -191,7 +192,7 @@ npm run package:vsix
 
 - Repository: [HecreReed/codecheck](https://github.com/HecreReed/codecheck)
 - Releases: [GitHub Releases](https://github.com/HecreReed/codecheck/releases)
-- Packaged extension: `cpp-code-checker-0.2.0.vsix`
+- Packaged extension: `cpp-code-checker-0.2.1.vsix`
 
 ## Smoke-Tested Paths
 

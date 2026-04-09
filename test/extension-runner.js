@@ -53,6 +53,9 @@ exports.run = async function run() {
   const mainUri = await getWorkspaceFile('main.cpp');
   const duplicate1Uri = await getWorkspaceFile('duplicate1.cpp');
   const duplicate2Uri = await getWorkspaceFile('duplicate2.cpp');
+  const ignoredBuildUri = await getWorkspaceFile(path.join('build-debug', 'generated.cpp'));
+  const ignoredTmpUri = await getWorkspaceFile(path.join('tmp', 'scratch.cpp'));
+  const ignoredInstallUri = await getWorkspaceFile(path.join('install', 'include', 'generated.h'));
 
   const mainDocument = await vscode.workspace.openTextDocument(mainUri);
   await vscode.window.showTextDocument(mainDocument);
@@ -66,6 +69,9 @@ exports.run = async function run() {
   await waitFor(async () => diagnosticsContain(mainUri, RULE_WARNING_SUPPRESS), 15000, 'scanWorkspace did not report warning suppression');
   await waitFor(async () => diagnosticsContain(duplicate1Uri, RULE_DUPLICATE_FILE), 15000, 'scanWorkspace did not report duplicate files');
   await waitFor(async () => diagnosticsContain(mainUri, RULE_OVERSIZED_DIRECTORY), 15000, 'scanWorkspace did not report oversized directory');
+  assert.equal(await diagnosticsContain(ignoredBuildUri, RULE_LICENSE), false, 'scanWorkspace should ignore build-debug/generated.cpp');
+  assert.equal(await diagnosticsContain(ignoredTmpUri, RULE_LICENSE), false, 'scanWorkspace should ignore tmp/scratch.cpp');
+  assert.equal(await diagnosticsContain(ignoredInstallUri, RULE_LICENSE), false, 'scanWorkspace should ignore install/include/generated.h');
 
   await vscode.commands.executeCommand('cppChecker.fixFile', mainUri);
   await sleep(1000);
