@@ -3,7 +3,7 @@
   "publisher": "HecreReed",
   "displayName": "C++ Code Checker",
   "description": "Automatically detect and fix C++ code issues based on MR ruleset",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -152,7 +152,7 @@
         },
         "cppChecker.maxFunctionLines": {
           "type": "number",
-          "default": 80,
+          "default": 50,
           "description": "Max lines allowed in a single function"
         },
         "cppChecker.maxNestingDepth": {
@@ -162,7 +162,7 @@
         },
         "cppChecker.maxCyclomaticComplexity": {
           "type": "number",
-          "default": 10,
+          "default": 20,
           "description": "Max cyclomatic complexity allowed per function"
         },
         "cppChecker.maxFilesPerDirectory": {
@@ -206,7 +206,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "package:vsix": "npx @vscode/vsce package --no-dependencies",
-    "test:unit": "npm run compile && node --test ./test/workspaceWalker.test.js",
+    "test:unit": "npm run compile && node --test ./test/*.test.js",
     "test:smoke": "npm run compile && node ./test/runTest.mjs",
     "test": "npm run test:unit && npm run test:smoke"
   },

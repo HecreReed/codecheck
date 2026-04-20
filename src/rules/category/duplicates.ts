@@ -61,25 +61,63 @@ export const duplicateCodeRule: Rule = {
   name: '重复代码',
   severity: 'warning',
   check(source: string): RuleMatch[] {
-    const lines = getLines(source);
+    const { cleaned } = tokenize(source);
+    const lines = getLines(cleaned);
     const results: RuleMatch[] = [];
-    const WINDOW = 10;
-    if (lines.length < WINDOW * 2) return [];
+    const WINDOW = 12;
+    const MIN_BLOCK_CHARS = 120;
+    const meaningfulLines = lines
+      .map((line, lineNumber) => ({
+        lineNumber,
+        text: line.replace(/\s+/g, ' ').trim(),
+      }))
+      .filter(item => item.text.length > 0 && !item.text.startsWith('#'));
+
+    if (meaningfulLines.length < WINDOW * 2) return [];
 
     const hashes = new Map<string, number>();
-    for (let i = 0; i <= lines.length - WINDOW; i++) {
-      const block = lines.slice(i, i + WINDOW)
-        .map(l => l.trim())
-        .filter(l => l.length > 0 && !l.startsWith('//'))
-        .join('\n');
-      if (block.length < 100) continue; // skip trivial blocks
-      const h = hashContent(block);
-      if (hashes.has(h)) {
-        const firstLine = hashes.get(h)!;
-        results.push({ ruleId: this.id, line: i, col: 0, message: `重复代码: 第 ${i + 1}-${i + WINDOW} 行与第 ${firstLine + 1}-${firstLine + WINDOW} 行代码重复` });
-      } else {
-        hashes.set(h, i);
+    for (let i = 0; i <= meaningfulLines.length - WINDOW; ) {
+      const blockLines = meaningfulLines.slice(i, i + WINDOW).map(item => item.text);
+      const uniqueLineCount = new Set(blockLines).size;
+      const block = blockLines.join('\n');
+      if (block.length < MIN_BLOCK_CHARS || uniqueLineCount < Math.ceil(WINDOW / 2)) {
+        i++;
+        continue;
       }
+
+      const h = hashContent(block);
+      const previousIndex = hashes.get(h);
+      if (previousIndex === undefined) {
+        hashes.set(h, i);
+        i++;
+        continue;
+      }
+
+      if (Math.abs(previousIndex - i) < WINDOW) {
+        i++;
+        continue;
+      }
+
+      let extension = WINDOW;
+      while (
+        previousIndex + extension < meaningfulLines.length &&
+        i + extension < meaningfulLines.length &&
+        meaningfulLines[previousIndex + extension].text === meaningfulLines[i + extension].text
+      ) {
+        extension++;
+      }
+
+      const currentStart = meaningfulLines[i].lineNumber;
+      const currentEnd = meaningfulLines[i + extension - 1].lineNumber;
+      const previousStart = meaningfulLines[previousIndex].lineNumber;
+      const previousEnd = meaningfulLines[previousIndex + extension - 1].lineNumber;
+      results.push({
+        ruleId: this.id,
+        line: currentStart,
+        col: 0,
+        message: `重复代码: 第 ${currentStart + 1}-${currentEnd + 1} 行与第 ${previousStart + 1}-${previousEnd + 1} 行代码重复`
+      });
+      i += extension;
     }
     return results;
   }

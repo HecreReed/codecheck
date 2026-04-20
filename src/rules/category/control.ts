@@ -35,13 +35,18 @@ export const assertRuntimeRule: Rule = {
     const lines = getLines(cleaned);
     const results: RuleMatch[] = [];
     lines.forEach((line, i) => {
+      if (/\bstatic_assert\s*\(/.test(line)) {
+        return;
+      }
+
       const m = line.match(/\bassert\s*\(/);
       if (m) {
-        // Heuristic: if assert contains pointer/memory/IO checks, it's a runtime check
-        const assertContent = line.slice((m.index ?? 0) + m[0].length);
-        if (/!=\s*nullptr|!=\s*NULL|!=\s*-1|fopen|malloc|calloc/.test(assertContent)) {
-          results.push({ ruleId: this.id, line: i, col: m.index ?? 0, message: 'G.AST.03: 禁止用 assert 检测运行期间可能发生的错误（如内存分配失败、文件打开失败），应使用错误处理代码' });
-        }
+        results.push({
+          ruleId: this.id,
+          line: i,
+          col: m.index ?? 0,
+          message: 'G.AST.03: 禁止使用 assert 处理运行期间可能发生的错误，应改为显式错误处理逻辑'
+        });
       }
     });
     return results;
